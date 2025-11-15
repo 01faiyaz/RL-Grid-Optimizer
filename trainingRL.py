@@ -1,38 +1,31 @@
-import gymnasium as gym
+import os
 from stable_baselines3 import PPO
-from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.monitor import Monitor
-from env.gridEnv import GridEnv  # your environment
+from stable_baselines3.common.env_util import make_vec_env
+from env.gridEnv import GridEnv
 
-# ----------------------------------------
-# 1. Create environment
-# ----------------------------------------
-env = GridEnv()
-env = Monitor(env)
+# Create models folder
+os.makedirs("models", exist_ok=True)
 
-# ----------------------------------------
-# 2. Create PPO model
-# ----------------------------------------
+# Create environment
+env = GridEnv(battery_power_kw=100)  # make battery more impactful
+vec_env = make_vec_env(lambda: env, n_envs=1)
+
+# Initialize PPO agent
 model = PPO(
     "MlpPolicy",
-    env,
+    vec_env,
+    verbose=0,        # 1 = basic logs, 0 = silent
     learning_rate=3e-4,
     n_steps=2048,
     batch_size=64,
     gamma=0.99,
-    gae_lambda=0.95,
     clip_range=0.2,
-    verbose=1,
 )
 
-# ----------------------------------------
-# 3. Train
-# ----------------------------------------
-model.learn(total_timesteps=200_000)
+# Train PPO agent
+total_timesteps = 500_000  # increased for better learning
+model.learn(total_timesteps=total_timesteps)
 
-# ----------------------------------------
-# 4. Save the model
-# ----------------------------------------
+# Save trained model
 model.save("models/ppo_grid_model")
-
-print("✔️ Training complete and model saved.")
+print("✅ Model saved as models/ppo_grid_model.zip")
