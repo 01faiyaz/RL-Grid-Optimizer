@@ -7,7 +7,7 @@ import os
 # Load evaluation outputs
 # =========================
 # Replace these with the paths to your evalV2 output files
-data_folder = "eval_outputs"
+data_folder = "evalOutputs"
 original_load = np.load(os.path.join(data_folder, "original_load.npy"))   # baseline load MW
 optimized_load = np.load(os.path.join(data_folder, "optimized_load.npy")) # RL optimized load MW
 battery_actions = np.load(os.path.join(data_folder, "battery_actions.npy")) # +charge / -discharge MW
