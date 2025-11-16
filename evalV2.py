@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
 from env.gridEnvV2 import GridEnvV2
+import os  # <- added for folder creation
 
 # ---- Load Env & Model ----
 env = GridEnvV2()
@@ -27,9 +28,9 @@ while not done:
     battery = env.battery_soc
 
     net_load = load - solar
-    if action == 1:
+    if action == 1:  # charge
         net_load += env.charge_rate
-    elif action == -1 or action == 2:
+    elif action == -1 or action == 2:  # discharge
         net_load -= env.discharge_rate
 
     battery_trace.append(battery)
@@ -40,7 +41,21 @@ while not done:
     done = terminated
     step += 1
 
-# ---- PLOTS ----
+# ---- Create folder for saving outputs ----
+os.makedirs("evalOutputs", exist_ok=True)
+
+# ---- Save evaluation outputs ----
+np.save("evalOutputs/original_load.npy", np.array(load_trace))
+np.save("evalOutputs/optimized_load.npy", np.array(netload_trace))
+np.save("evalOutputs/battery_actions.npy", np.array(battery_trace))
+
+# If you tracked rewards in env/step, replace this line with actual values
+rewards = np.zeros(len(load_trace))  # placeholder if rewards not collected
+np.save("evalOutputs/rewards.npy", rewards)
+
+print("\nEvaluation completed. Outputs saved to evalOutputs folder.")
+
+# ---- Optional: Quick plots ----
 plt.figure(figsize=(12, 4))
 plt.title("Battery State-of-Charge (SoC)")
 plt.plot(battery_trace)
@@ -64,5 +79,3 @@ plt.plot(solar_trace, label="Solar")
 plt.legend()
 plt.grid()
 plt.show()
-
-print("\nEvaluation completed.")
