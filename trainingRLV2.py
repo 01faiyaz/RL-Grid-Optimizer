@@ -10,11 +10,12 @@ model = PPO(
     "MlpPolicy",
     env,
     verbose=0,
-    tensorboard_log="tb_logs/",
+    tensorboard_log=None,  # disables tensorboard
     learning_rate=3e-4,
     n_steps=2048,
     batch_size=64,
 )
+
 
 # ---- Save checkpoints every 100k steps ----
 checkpoint_callback = CheckpointCallback(
