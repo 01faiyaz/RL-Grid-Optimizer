@@ -9,7 +9,7 @@ env = GridEnvV2()
 model = PPO(
     "MlpPolicy",
     env,
-    verbose=1,
+    verbose=0,
     tensorboard_log="tb_logs/",
     learning_rate=3e-4,
     n_steps=2048,
