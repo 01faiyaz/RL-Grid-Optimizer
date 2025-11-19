@@ -1,0 +1,51 @@
+RL Grid Optimizer is designed to apply Reinforcement Learning to optimize a simulation of the California Electricity Grid duck curve; focusing on the
+net load fluctuations due to renewable energy.
+
+The goal of this project was to:
+Flattern the net load curve
+Improve renewable energy by using satellite intelligence
+Optimize the battery operations
+
+I use PYTHON, Stable-Baseline3 (PPO Agent), Gym Scaffold, and Parts of Generative AI for Debugging and Error handling.
+This is all simulated under a grid performance environment with the GYM.
+
+The final Environment is the GridEnvV2. It loads the profile, solar generation profilel, and the battery storage system. The actions go through -1 or 2 which discharge
+the battery. 0 Does nothing. 1 indicates charging the battery.
+
+The reward is to sustain reductions during the peak net load and proper battery usage.
+
+Training Algorithm: Proximal Polixy Optimization [PPO]
+It interacts with gridEnvV2, in which it will learn to minimize the net load peaks while respecting the constraints of the created battery
+The model is then saved inside of ppo_grid_model_v2.zip inside model
+
+Evaluation:
+evalV2.py
+    - Loads trained PPO agent
+    - Runs the agent on the full simulation
+    Tracks:
+    - load_trace = original load
+    - optimized_load = net load after RL control
+    - battery_trace = battery SoC
+    - reward_trace = reward per step
+    Saves all traces to .npy files in evalOutputs/
+
+analysEVAL.py
+    - Loads evaluation outputs (.npy files)
+    - Generates final plots (.png) for reporting:
+        - Duck curve comparison (original vs RL optimized)
+        - Battery SoC timeline
+        - Net load timeline
+        - Reward per step
+
+Calculates Key Performance Indicators (KPIs):
+- Peak Reduction (%) = 29.45%
+- Ramp Reduction (%) = -28.17%
+- Renewable Utilization (%) = 36.09%
+- Average Reward = -0.24
+Saves KPI summary to evalOutputs/kpis_summary.csv
+
+OBSERVATION:
+Peak Reduction the peak load by 29% which is successful
+Ramp reduction is -28% which indicates a maximum ramp increases
+Renewable utilization of 36% shows moderate effectiveness of using solar energy
+The average reward is positive
