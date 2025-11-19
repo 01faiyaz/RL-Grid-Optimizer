@@ -4,5 +4,3 @@ import torch
 import gymnasium
 import stable_baselines3 as sb3
 import wandb
-print("All imports successful")
-print(dir)
