@@ -49,3 +49,5 @@ Peak Reduction the peak load by 29% which is successful
 Ramp reduction is -28% which indicates a maximum ramp increases
 Renewable utilization of 36% shows moderate effectiveness of using solar energy
 The average reward is positive
+
+@01faiyaz
