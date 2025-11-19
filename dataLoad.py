@@ -1,7 +1,6 @@
 import os
 import json
 from typing import Optional, Tuple, List, Dict
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -31,11 +30,8 @@ class DatasetLoader:
         self.raw_df = self._load_csv()
         self._validate()
         self._add_datetime_features()
-        # set after creating/scaling
         self.scalers: Dict[str, MinMaxScaler] = {}
         self.normalized_df: Optional[pd.DataFrame] = None
-
-    # Loading & validation
 
     def _load_csv(self) -> pd.DataFrame:
         if not os.path.exists(self.csv_path):
