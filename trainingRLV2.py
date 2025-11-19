@@ -2,10 +2,11 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from env.gridEnvV2 import GridEnvV2
 
-# ---- Create Environment ----
+#creating the second environment
 env = GridEnvV2()
 
-# ---- Model ----
+#making the model 
+#attains the ppo model and parameters
 model = PPO(
     "MlpPolicy",
     env,
@@ -17,19 +18,18 @@ model = PPO(
 )
 
 
-# ---- Save checkpoints every 100k steps ----
+# calling checkpoint callback to generate checkpoints by every 100k steps
 checkpoint_callback = CheckpointCallback(
     save_freq=100000,
     save_path="./models/",
     name_prefix="ppo_grid_ckpt"
 )
 
-# ---- Train ----
+# 500k steps for training for more accuracy
 model.learn(
     total_timesteps=500_000,
     callback=checkpoint_callback
 )
 
-# ---- Save final model ----
+
 model.save("models/ppo_grid_model_v2")
-print("\nTraining complete → model saved!")
