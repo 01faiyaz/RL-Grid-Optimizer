@@ -3,10 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# -------------------
-# Load evaluation outputs
-# -------------------
-data_folder = "evalOutputs"  # matches your evalV2 output folder
+# loading all values from outputs
+data_folder = "evalOutputs"
 original_load = np.load(f"{data_folder}/original_load.npy")
 optimized_load = np.load(f"{data_folder}/optimized_load.npy")
 battery_actions = np.load(f"{data_folder}/battery_actions.npy")
@@ -14,9 +12,8 @@ rewards = np.load(f"{data_folder}/rewards.npy")
 
 time_steps = np.arange(len(original_load))
 
-# -------------------
-# Plots
-# -------------------
+# making all the plots with matplotlib 
+# mostly a grid with line plot
 plt.figure(figsize=(12, 4))
 plt.plot(original_load, label="Original Load")
 plt.plot(optimized_load, label="RL Optimized Load")
@@ -55,9 +52,7 @@ plt.grid(True)
 plt.savefig(f"{data_folder}/net_load.png")
 plt.show()
 
-# -------------------
-# KPI calculations
-# -------------------
+#calculating all the kpis
 def calc_peak_reduction(original, optimized):
     return (original.max() - optimized.max()) / original.max() * 100
 
@@ -85,9 +80,7 @@ print("\n=== RL Evaluation KPIs ===")
 for k, v in kpis.items():
     print(f"{k}: {v:.2f}")
 
-# -------------------
-# Save KPIs
-# -------------------
+#making sure to save kpis to csv file
 os.makedirs(data_folder, exist_ok=True)
 df_kpis = pd.DataFrame([kpis])
 df_kpis.to_csv(f"{data_folder}/kpis_summary.csv", index=False)
