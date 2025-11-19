@@ -14,10 +14,10 @@ Designed for research, experimentation, and production-grade scaling
 
 VISUALITY:
 ### Duck-Curve Comparison
-![Duck Curve Comparison](models/duck_curve_comparison.png)
+![Duck Curve Comparison](evalOutputs/duck_curve_comparison.png)
 
 ### RL vs. Original Optimized
-![Duck Curve Comparison](models/California Duck-Curve - RL Optimized.png)
+![Duck Curve Comparison](evalOutputs/California_rl_optimized.png)
 
 Environment Components:
 Demand curve: Hourly load from duck-curve patterns
