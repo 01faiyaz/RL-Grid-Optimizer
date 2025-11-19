@@ -124,7 +124,6 @@ class DatasetLoader:
             df[col] = scaled.flatten()
         self.normalized_df = df
         return df
-
     def get_normalized_df(self) -> pd.DataFrame:
         if self.normalized_df is None:
             return self.normalize_df()
@@ -134,13 +133,11 @@ class DatasetLoader:
     # helpers for env
     def n_timesteps(self) -> int:
         return len(self.raw_df)
-
     def get_row(self, t: int) -> pd.Series:
         # return raw row at global timestep t
         if t < 0 or t >= self.n_timesteps():
             raise IndexError("t out of range")
         return self.raw_df.iloc[t]
-
     def get_state_at(self, t: int, include_hour_cycle: bool = True) -> np.ndarray:
         df = self.get_normalized_df()
         row = df.iloc[t]
