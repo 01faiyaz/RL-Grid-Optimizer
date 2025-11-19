@@ -1,6 +1,8 @@
 import os
 import json
 from typing import Optional, Tuple, List, Dict
+
+# importing the tools
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -10,20 +12,21 @@ columns = ['load', 'solar', 'price']
 class DatasetLoader:
     def __init__(
         self,
-        csv_path: str = "data/dataset.csv",
-        scalers_dir: str = "data/scalers",
-        validate_columns: Optional[List[str]] = None,
+        # gets the load, solar, price data from csv
+        csv_path: 
+            str = "data/dataset.csv",
+        # gets min/max from the directory
+        scalers_dir: 
+            str = "data/scalers",
+        # gives list of expected columns
+        validate_columns: 
+            Optional[List[str]] = None,
     ):
-        """
-        Args:
-            csv_path: path to the CSV dataset (expects columns: load, solar, price)
-            scalers_dir: directory where scalers (min/max) will be saved/loaded
-            validate_columns: list of expected columns; defaults to DEFAULT_COLUMNS
-        """
         self.csv_path = csv_path
         self.scalers_dir = scalers_dir
         self.validate_columns = validate_columns or columns
 
+        # ensure directories exist in the os
         os.makedirs(os.path.dirname(self.csv_path) or ".", exist_ok=True)
         os.makedirs(self.scalers_dir, exist_ok=True)
 
@@ -43,29 +46,26 @@ class DatasetLoader:
         missing = [c for c in self.validate_columns if c not in self.raw_df.columns]
         if missing:
             raise ValueError(f"Dataset is missing required columns: {missing}")
-        # Ensure numeric types for expected columns
+        # numeric types for expected columns
         for c in self.validate_columns:
             if not pd.api.types.is_numeric_dtype(self.raw_df[c]):
                 # try converting
                 self.raw_df[c] = pd.to_numeric(self.raw_df[c], errors="raise")
 
     def _add_datetime_features(self):
-        # If there's no datetime index, create a simple hour index based on rows
+        # If it cant find datatime index, create a hour/day cycle
         n = len(self.raw_df)
         # create hour of day and day index (useful for cyclic features)
         hours = np.arange(n) % 24
         days = np.arange(n) // 24
         self.raw_df["hour"] = hours
         self.raw_df["day"] = days
-        # cyclical features for hour (useful for ML/RL)
+        # cyclical features for hour
+        # oscillation
         self.raw_df["hour_sin"] = np.sin(2 * np.pi * hours / 24)
         self.raw_df["hour_cos"] = np.cos(2 * np.pi * hours / 24)
 
     def fit_and_save_scalers(self):
-        """
-        Fit MinMax scalers for each numeric column we want to normalize,
-        and save them to scalers_dir as json files (min,max).
-        """
         cols_to_scale = self._scaling_columns()
         for col in cols_to_scale:
             vals = self.raw_df[[col]].values.astype(float)
@@ -78,9 +78,8 @@ class DatasetLoader:
                 json.dump(meta, fh)
 
     def load_scalers(self):
-        """
-        Load scaler metadata (.json) files from scalers_dir and construct MinMaxScaler objects.
-        """
+        # load scaler .json files from scalers_dir
+        # make MinMaxScaler objects
         cols_to_scale = self._scaling_columns()
         for col in cols_to_scale:
             path = os.path.join(self.scalers_dir, f"{col}_scaler.json")
@@ -89,7 +88,8 @@ class DatasetLoader:
             with open(path, "r") as fh:
                 meta = json.load(fh)
             scaler = MinMaxScaler(feature_range=(0.0, 1.0))
-            # sklearn's MinMaxScaler expects arrays; we set attributes manually
+            # sklearn MinMaxScaler gets arrays
+            # set attributes manually
             scaler.data_min_ = np.array([meta["min_"]])
             scaler.data_max_ = np.array([meta["max_"]])
             scaler.data_range_ = scaler.data_max_ - scaler.data_min_
@@ -98,18 +98,18 @@ class DatasetLoader:
             self.scalers[col] = scaler
 
     def _scaling_columns(self) -> List[str]:
-        # We scale all main numeric columns plus maybe derived features if desired.
-        # For env inputs we typically scale: load, solar, price
+        # scale all main numeric columns
+        # env inputs scale: load, solar, price
         return list(self.validate_columns)
 
-    # Normalization helpers
+    # help for normalization
     def normalize_df(self) -> pd.DataFrame:
         """
         Return a DataFrame with the scaled columns replaced by normalized values [0,1].
         Non-scaled columns (hour, hour_sin, hour_cos, day) are left as-is.
         """
         if not self.scalers:
-            # First attempt to load scalers; if not present, compute them.
+            # first attempt to load scalers
             try:
                 self.load_scalers()
             except FileNotFoundError:
@@ -131,24 +131,17 @@ class DatasetLoader:
         return self.normalized_df
 
 
-    # Access helpers for env/ML
+    # helpers for env
     def n_timesteps(self) -> int:
         return len(self.raw_df)
 
     def get_row(self, t: int) -> pd.Series:
-        """
-        Return raw row at global timestep t (un-normalized).
-        """
+        # return raw row at global timestep t
         if t < 0 or t >= self.n_timesteps():
             raise IndexError("t out of range")
         return self.raw_df.iloc[t]
 
     def get_state_at(self, t: int, include_hour_cycle: bool = True) -> np.ndarray:
-        """
-        Return a normalized state vector for timestep t.
-        By default includes: [load, solar, price, battery_placeholder(0), hour_sin, hour_cos]
-        Battery is included as a placeholder (0) so the env can append actual SoC.
-        """
         df = self.get_normalized_df()
         row = df.iloc[t]
         state = [row["load"], row["solar"], row["price"]]
@@ -159,12 +152,11 @@ class DatasetLoader:
         return state
 
     def get_windows(self, window_size: int = 24, features: Optional[List[str]] = None) -> np.ndarray:
-        """
-        Create sliding windows over the normalized dataframe.
 
-        Returns:
-            numpy array of shape (n_windows, window_size, n_features)
-        """
+        # create windows for dataframe
+
+        # returns array of shape (n_windows, window_size, n_features)
+
         df = self.get_normalized_df()
         features = features or (self._scaling_columns() + ["hour_sin", "hour_cos"])
         arr = df[features].values.astype(float)
@@ -182,7 +174,7 @@ class DatasetLoader:
 
 
 
-# CLI / quick test
+# quick test
 def _quick_test(csv_path="data/dataset.csv"):
     print("Quick test for DatasetLoader")
     loader = DatasetLoader(csv_path=csv_path, scalers_dir="data/scalers_test")
